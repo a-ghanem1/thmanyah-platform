@@ -1,158 +1,129 @@
-# Database Schema Design
+# Database Schema
 
-This document describes the database schema used for the Content Management and Discovery platform.
+This document reflects `prisma/schema.prisma`. Table names follow Prisma defaults (PascalCase).
 
-The schema is designed to:
-- Support strong consistency for CMS write operations
-- Optimize read-heavy discovery traffic
-- Remain simple and extensible
+## Core Content
 
----
+### Program
 
-## Overview
+```
+Program
+-------
+id           TEXT (PK)
+title        TEXT
+description  TEXT NULL
+language     TEXT
+status       TEXT
+publishedAt  TIMESTAMP NULL
+createdAt    TIMESTAMP (default now)
+updatedAt    TIMESTAMP (updatedAt)
+```
 
-The system is built around three core entities:
-- Programs
-- Episodes
-- Categories
+Indexes: `status`, `language`, `publishedAt`.
 
-Relationships are designed to reflect real-world content structure while remaining efficient for querying.
+### Episode
 
----
+```
+Episode
+-------
+id               TEXT (PK)
+programId        TEXT (FK → Program.id)
+title            TEXT
+description      TEXT NULL
+durationSeconds  INTEGER
+audioUrl         TEXT NULL
+publishedAt      TIMESTAMP NULL
+createdAt        TIMESTAMP (default now)
+updatedAt        TIMESTAMP (updatedAt)
+```
 
-## Tables
+Indexes: `programId`, `publishedAt`.
 
-### programs
+### Category
 
-Represents a podcast or show (e.g., "فنجان").
-
-```sql
-programs
+```
+Category
 --------
-id              UUID (PK)
-title           VARCHAR
-description     TEXT
-language        VARCHAR
-status          VARCHAR   -- draft | published | archived
-published_at    TIMESTAMP
-created_at      TIMESTAMP
-updated_at      TIMESTAMP
+id        TEXT (PK)
+name      TEXT
+slug      TEXT (UNIQUE)
+createdAt TIMESTAMP (default now)
 ```
 
-**Notes:**
-- `status` is modeled as a string for extensibility.
-- `published_at` is separated from creation time.
-- `language` is stored at the program level for simplicity.
+### ProgramCategory
 
----
+```
+ProgramCategory
+---------------
+programId  TEXT (FK → Program.id)
+categoryId TEXT (FK → Category.id)
+```
 
-### episodes
+Composite primary key: `(programId, categoryId)`.
 
-Represents individual episodes belonging to a program.
+## Authentication
 
-```sql
-episodes
+### User
+
+```
+User
+----
+id           TEXT (PK)
+email        TEXT (UNIQUE)
+passwordHash TEXT
+isActive     BOOLEAN (default true)
+createdAt    TIMESTAMP (default now)
+updatedAt    TIMESTAMP (updatedAt)
+```
+
+### Role
+
+```
+Role
+----
+id   TEXT (PK)
+name TEXT (UNIQUE)
+```
+
+### UserRole
+
+```
+UserRole
 --------
-id                UUID (PK)
-program_id        UUID (FK → programs.id)
-title             VARCHAR
-description       TEXT
-duration_seconds  INTEGER
-audio_url         TEXT
-published_at      TIMESTAMP
-created_at        TIMESTAMP
-updated_at        TIMESTAMP
+userId TEXT (FK → User.id)
+roleId TEXT (FK → Role.id)
 ```
 
-**Notes:**
-- Each episode belongs to exactly one program.
-- `duration_seconds` enables numeric filtering in discovery.
-- Episodes inherit visibility from their program.
+Composite primary key: `(userId, roleId)`.
 
----
+## Search Outbox
 
-### categories
-
-Represents content categories (e.g., Business, Technology).
-
-```sql
-categories
-----------
-id          UUID (PK)
-name        VARCHAR
-slug        VARCHAR (UNIQUE)
-created_at  TIMESTAMP
-```
-
-**Notes:**
-- `slug` is used for URL-safe identifiers.
-- Categories are normalized to avoid duplication.
-
----
-
-### program_categories
-
-Join table to support many-to-many relationships between programs and categories.
-
-```sql
-program_categories
-------------------
-program_id   UUID (FK → programs.id)
-category_id  UUID (FK → categories.id)
-```
-
-**Notes:**
-- A program can belong to multiple categories.
-- Composite primary key can be applied if needed.
-
----
-
-## Relationships
+### SearchOutboxEvent
 
 ```
-Program 1 ────< Episodes
-Program >────< Categories
+SearchOutboxEvent
+-----------------
+id          TEXT (PK)
+type        TEXT
+entityId    TEXT
+payload     JSONB
+status      SearchOutboxStatus (default pending)
+attempts    INTEGER (default 0)
+lastError   TEXT NULL
+createdAt   TIMESTAMP (default now)
+processedAt TIMESTAMP NULL
 ```
 
----
+Indexes: `(status, createdAt)`, `type`.
 
-## Indexing Strategy
+### SearchOutboxStatus
 
-Indexes are added to support high read throughput and filtering.
+Enum values: `pending`, `processed`, `failed`.
 
-```sql
--- Programs
-INDEX ON programs (status);
-INDEX ON programs (language);
-INDEX ON programs (published_at);
+## Relationships Summary
 
--- Episodes
-INDEX ON episodes (program_id);
-INDEX ON episodes (published_at);
-
--- Categories
-UNIQUE INDEX ON categories (slug);
 ```
-
----
-
-## Discovery Optimization
-
-- PostgreSQL serves as the source of truth.
-- Discovery queries rely primarily on a search engine.
-- The database schema is optimized for writes and integrity.
-- Heavy joins are avoided in public APIs.
-
----
-
-## Consistency Model
-
-- Write operations use strong consistency via PostgreSQL transactions.
-- Read operations tolerate eventual consistency.
-- Search indexes are updated asynchronously after writes.
-
----
-
-## Summary
-
-This schema provides a clean and scalable foundation for both content management and discovery use cases. It balances relational integrity with performance and is designed to evolve alongside the system architecture.
+Program 1 ────< Episode
+Program >────< Category (via ProgramCategory)
+User >────< Role (via UserRole)
+```

@@ -1,74 +1,108 @@
 # Thmanyah Platform
 
 ## Project Overview
-Thmanyah Platform is a NestJS backend built as a modular monolith. It powers two primary areas:
-- Thmanyah Studio: internal CMS for editorial and content operations.
-- Thmanyah Explore: public discovery and search experiences.
+
+Thmanyah Platform is a NestJS modular monolith that serves two modules:
+
+- Thmanyah Studio: internal CMS for managing programs, episodes, and categories.
+- Thmanyah Explore: public discovery and search APIs with Redis-backed caching.
+
+PostgreSQL (via Prisma) is the source of truth. Program changes enqueue outbox events that a background worker consumes to sync the Meilisearch index.
 
 ## Architecture Summary
-This codebase follows a modular monolith architecture. For details, see `docs/architecture.md`.
+
+The system is a modular monolith with shared database, cache, and search infrastructure. For details, see `docs/architecture.md`.
 
 ## Tech Stack
-- Node.js / NestJS
-- Prisma + PostgreSQL
+
+- NestJS
+- Prisma
+- PostgreSQL
 - Meilisearch
-- Docker (local development only)
+- Redis (optional cache)
+- Docker / Docker Compose
 
-## Local Development
-Requirements: Node.js and Docker
+## Local Development (non-docker)
 
-### Run with Docker Compose
-1) `docker compose up -d --build`
-2) `npm install`
-3) `npm run prisma:generate`
-4) `npm run prisma:migrate`
-5) `npm run db:seed`
+Requirements: Node.js, PostgreSQL, Meilisearch. Redis is optional.
 
-Docker Compose uses `.env.docker` by default. Update it to match your local setup.
+1. `npm install`
+2. `npm run prisma:generate`
+3. `npm run prisma:migrate`
+4. `npm run db:seed`
+5. `npm run start:dev`
 
-If you prefer running Prisma inside the app container:
-`docker exec -it thmanyah-app npx prisma migrate dev`
+## Docker Compose (end-to-end)
 
-### Run API locally (without Docker)
-1) `npm install`
-2) `npm run prisma:generate`
-3) `npm run prisma:migrate`
-4) `npm run db:seed`
-5) `npm run start:dev`
+1. `docker compose up -d --build`
+2. `docker exec -it thmanyah-app npm run prisma:generate`
+3. `docker exec -it thmanyah-app npm run prisma:migrate`
+4. `docker exec -it thmanyah-app npm run db:seed`
+
+Docker Compose uses `.env.docker` by default. The API will be available on `http://localhost:3000`.
 
 ## Environment Variables
-Core:
+
+Set these in `.env` for local runs or in `.env.docker` for Docker Compose. These are validated at startup:
+
+Required:
+
 - `DATABASE_URL`
 - `MEILI_HOST`
+- `JWT_SECRET`
+- `PORT`
+
+Optional:
+
 - `MEILI_API_KEY`
- - `REDIS_URL`
+- `REDIS_URL`
+- `JWT_EXPIRES_IN` (defaults to `1h`)
+
+## Authentication
+
+Studio uses JWT authentication with role-based access (admin/editor). Explore endpoints are public.
+
+Login:
+
+- `POST /studio/auth/login`
+
+Bearer token example:
+
+```bash
+curl "http://localhost:3000/studio/programs" \
+  -H "Authorization: Bearer <token>"
+```
+
+The seed user email is `admin@thmanyah.local`. Set `ADMIN_PASSWORD` before running `npm run db:seed` (defaults to `Admin@12345`).
+
+## Key Endpoints
 
 Studio:
-- `JWT_SECRET`
-- `JWT_EXPIRES_IN`
-- `ADMIN_PASSWORD` (used by `prisma/seed.ts`)
 
-### Studio Login (after seeding)
-Default admin:
-- Email: `admin@thmanyah.local`
-- Password: value of `ADMIN_PASSWORD` (in `.env.docker` it's `password`, defaults to `Admin@12345` when unset)
+- `POST /studio/auth/login`
+- `GET /studio/programs`
+- `GET /studio/categories`
+- `POST /studio/programs/:programId/episodes`
+- `GET /studio/episodes/:id`
 
-Example:
-```bash
-curl -X POST "http://localhost:3000/studio/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@thmanyah.local","password":"password"}'
-```
+Explore (public):
 
-### Explore (public) quick checks
-```bash
-curl "http://localhost:3000/explore/programs?page=1&limit=10"
-curl "http://localhost:3000/explore/search?q=podcast&page=1&limit=10"
-```
+- `GET /explore/programs`
+- `GET /explore/programs/:id`
+- `GET /explore/programs/:id/episodes`
+- `GET /explore/categories`
+- `GET /explore/search`
+
+Other:
+
+- `GET /health`
+- `GET /docs`
 
 ## Documentation
+
 - `docs/architecture.md`
 - `docs/database-schema.md`
 
 ## Postman
+
 Collection: `postman/Thmanyah-Platform.postman_collection.json`
