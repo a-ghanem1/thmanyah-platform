@@ -34,9 +34,7 @@ export class EpisodesController {
   @ApiOperation({ summary: 'List episodes for a program' })
   @ApiParam({ name: 'programId', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Episode list' })
-  findAllByProgram(
-    @Param('programId', new ParseUUIDPipe()) programId: string,
-  ) {
+  findAllByProgram(@Param('programId', new ParseUUIDPipe()) programId: string) {
     return this.episodesService.findAllByProgram(programId);
   }
 

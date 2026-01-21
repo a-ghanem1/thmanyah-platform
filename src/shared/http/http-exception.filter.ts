@@ -35,6 +35,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message: message ?? 'Unexpected error',
       path: request.url,
       timestamp: new Date().toISOString(),
+      requestId: request.headers['x-request-id'],
     });
   }
 }
