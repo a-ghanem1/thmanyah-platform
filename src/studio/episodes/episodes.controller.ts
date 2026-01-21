@@ -7,13 +7,16 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { StudioApiKeyGuard } from '../security/studio-api-key.guard';
 import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { EpisodesService } from './episodes.service';
 
 @ApiTags('Studio', 'studio/episodes')
+@UseGuards(StudioApiKeyGuard)
 @Controller('studio')
 export class EpisodesController {
   constructor(private readonly episodesService: EpisodesService) {}

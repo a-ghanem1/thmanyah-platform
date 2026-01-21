@@ -7,8 +7,8 @@ services:
     environment:
       DATABASE_URL: postgresql://thmanyah:thmanyah@postgres:5432/thmanyah?schema=public
       MEILI_HOST: http://meilisearch:7700
-      MEILI_API_KEY: thmanyah
-      STUDIO_API_KEY: thmanyah
+      MEILI_API_KEY: 9940a8b9-16f5-419b-a354-a122ab66c34d
+      STUDIO_API_KEY: ee335e8b-d763-46f4-a43b-58237dc67415
       PORT: 3000
     ports:
       - "3000:3000"
@@ -35,7 +35,7 @@ services:
     image: getmeili/meilisearch:v1.9
     container_name: thmanyah-meilisearch
     environment:
-      MEILI_MASTER_KEY: thmanyah
+      MEILI_MASTER_KEY: 9940a8b9-16f5-419b-a354-a122ab66c34d
       MEILI_ENV: development
     ports:
       - "7700:7700"

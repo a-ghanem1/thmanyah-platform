@@ -7,14 +7,17 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { StudioApiKeyGuard } from '../security/studio-api-key.guard';
 import { CreateProgramDto } from './dto/create-program.dto';
 import { UpdateProgramCategoriesDto } from './dto/update-program-categories.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
 import { ProgramsService } from './programs.service';
 
 @ApiTags('Studio', 'studio/programs')
+@UseGuards(StudioApiKeyGuard)
 @Controller('studio/programs')
 export class ProgramsController {
   constructor(private readonly programsService: ProgramsService) {}
