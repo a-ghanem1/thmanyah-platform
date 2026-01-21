@@ -11,17 +11,20 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @ApiTags('Studio', 'studio/categories')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('studio/categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Create a category' })
   @ApiResponse({ status: 201, description: 'Category created' })
   create(@Body() dto: CreateCategoryDto) {
@@ -29,6 +32,7 @@ export class CategoriesController {
   }
 
   @Get()
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'List categories' })
   @ApiResponse({ status: 200, description: 'Category list' })
   findAll() {
@@ -36,6 +40,7 @@ export class CategoriesController {
   }
 
   @Get(':id')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Get a category' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Category details' })
@@ -45,6 +50,7 @@ export class CategoriesController {
   }
 
   @Put(':id')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Update a category' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Category updated' })
@@ -57,6 +63,7 @@ export class CategoriesController {
   }
 
   @Delete(':id')
+  @Roles('admin')
   @ApiOperation({ summary: 'Delete a category' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Category deleted' })

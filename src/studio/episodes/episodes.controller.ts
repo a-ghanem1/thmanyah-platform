@@ -11,17 +11,20 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { EpisodesService } from './episodes.service';
 
 @ApiTags('Studio', 'studio/episodes')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('studio')
 export class EpisodesController {
   constructor(private readonly episodesService: EpisodesService) {}
 
   @Post('programs/:programId/episodes')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Create an episode for a program' })
   @ApiParam({ name: 'programId', format: 'uuid' })
   @ApiResponse({ status: 201, description: 'Episode created' })
@@ -34,6 +37,7 @@ export class EpisodesController {
   }
 
   @Get('programs/:programId/episodes')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'List episodes for a program' })
   @ApiParam({ name: 'programId', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Episode list' })
@@ -42,6 +46,7 @@ export class EpisodesController {
   }
 
   @Get('episodes/:id')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Get an episode' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Episode details' })
@@ -51,6 +56,7 @@ export class EpisodesController {
   }
 
   @Put('episodes/:id')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Update an episode' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Episode updated' })
@@ -63,6 +69,7 @@ export class EpisodesController {
   }
 
   @Delete('episodes/:id')
+  @Roles('admin')
   @ApiOperation({ summary: 'Delete an episode' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Episode deleted' })

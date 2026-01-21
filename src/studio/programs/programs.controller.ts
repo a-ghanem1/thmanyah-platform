@@ -11,18 +11,21 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 import { CreateProgramDto } from './dto/create-program.dto';
 import { UpdateProgramCategoriesDto } from './dto/update-program-categories.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
 import { ProgramsService } from './programs.service';
 
 @ApiTags('Studio', 'studio/programs')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('studio/programs')
 export class ProgramsController {
   constructor(private readonly programsService: ProgramsService) {}
 
   @Post()
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Create a program' })
   @ApiResponse({ status: 201, description: 'Program created' })
   create(@Body() dto: CreateProgramDto) {
@@ -30,6 +33,7 @@ export class ProgramsController {
   }
 
   @Get()
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'List programs' })
   @ApiResponse({ status: 200, description: 'Program list' })
   findAll() {
@@ -37,6 +41,7 @@ export class ProgramsController {
   }
 
   @Get(':id')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Get a program' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Program details' })
@@ -46,6 +51,7 @@ export class ProgramsController {
   }
 
   @Put(':id')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Update a program' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Program updated' })
@@ -58,6 +64,7 @@ export class ProgramsController {
   }
 
   @Put(':id/categories')
+  @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Replace program categories' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Program categories updated' })
@@ -70,6 +77,7 @@ export class ProgramsController {
   }
 
   @Delete(':id')
+  @Roles('admin')
   @ApiOperation({ summary: 'Delete a program' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Program deleted' })
