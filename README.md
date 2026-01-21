@@ -96,6 +96,7 @@ Explore (public):
 Other:
 
 - `GET /health`
+- `GET /health/ready`
 - `GET /docs`
 
 ## Documentation

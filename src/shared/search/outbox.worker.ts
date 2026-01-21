@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { SearchOutboxStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { MeiliService } from './meili.service';
@@ -39,7 +44,9 @@ export class SearchOutboxWorker implements OnModuleInit, OnModuleDestroy {
     try {
       const events = await this.prisma.searchOutboxEvent.findMany({
         where: {
-          status: { in: [SearchOutboxStatus.pending, SearchOutboxStatus.failed] },
+          status: {
+            in: [SearchOutboxStatus.pending, SearchOutboxStatus.failed],
+          },
         },
         orderBy: { createdAt: 'asc' },
         take: DEFAULT_BATCH_SIZE,
@@ -82,7 +89,8 @@ export class SearchOutboxWorker implements OnModuleInit, OnModuleDestroy {
             `Processed outbox event ${event.id} (${event.type}).${requestTag}`,
           );
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
+          const message =
+            error instanceof Error ? error.message : String(error);
           await this.prisma.searchOutboxEvent.update({
             where: { id: event.id },
             data: {

@@ -111,11 +111,24 @@ export class CacheService implements OnModuleDestroy {
       return '';
     }
 
-    if (typeof value === 'object') {
-      return this.stableStringify(value);
+    if (typeof value === 'string') {
+      return value;
     }
 
-    return String(value);
+    if (
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      typeof value === 'bigint' ||
+      typeof value === 'symbol'
+    ) {
+      return this.primitiveToString(value);
+    }
+
+    if (typeof value === 'function') {
+      return value.name || '[function]';
+    }
+
+    return this.stableStringify(value);
   }
 
   private stableStringify(value: unknown): string {
@@ -127,12 +140,39 @@ export class CacheService implements OnModuleDestroy {
       return `[${value.map((item) => this.stableStringify(item)).join(',')}]`;
     }
 
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      typeof value === 'bigint' ||
+      typeof value === 'symbol'
+    ) {
+      return this.primitiveToString(value);
+    }
+
+    if (typeof value === 'function') {
+      return value.name || '[function]';
+    }
+
     if (typeof value === 'object') {
       const record = value as Record<string, unknown>;
       const keys = Object.keys(record).sort();
       return `{${keys
         .map((key) => `${key}:${this.stableStringify(record[key])}`)
         .join(',')}}`;
+    }
+
+    return '';
+  }
+
+  private primitiveToString(
+    value: string | number | boolean | bigint | symbol,
+  ): string {
+    if (typeof value === 'symbol') {
+      return value.toString();
     }
 
     return String(value);
