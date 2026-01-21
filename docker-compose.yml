@@ -1,4 +1,24 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: thmanyah-app
+    environment:
+      DATABASE_URL: postgresql://thmanyah:thmanyah@postgres:5432/thmanyah?schema=public
+      MEILI_HOST: http://meilisearch:7700
+      MEILI_API_KEY: thmanyah
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - meilisearch
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
   postgres:
     image: postgres:16
     container_name: thmanyah-postgres

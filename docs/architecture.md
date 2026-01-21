@@ -33,8 +33,8 @@ Each module represents a clear bounded context with explicit responsibilities.
 
 | Module | Responsibility |
 |------|----------------|
-| Thmanyah Studio | Internal content management (programs, episodes, categories) |
-| Thmanyah Explore | Public read-only APIs for discovery (search, browse) |
+| Studio | Internal content management (programs, episodes, categories) |
+| Explore | Public read-only APIs for discovery (search, browse) |
 | Ingestion | Import content from external sources |
 | Shared | Database, cache, configuration, logging |
 
@@ -94,7 +94,7 @@ Strong consistency is enforced for writes, while discovery favors availability w
 |----|----|----|
 | Primary DB | PostgreSQL | Relational data, transactions, indexing |
 | Cache | Redis | Low latency, hot content |
-| Search | OpenSearch / Meilisearch | Full-text search, filtering |
+| Search | Meilisearch | Full-text search, filtering |
 
 PostgreSQL can be deployed on Amazon RDS or Aurora PostgreSQL depending on scale requirements.
 
@@ -127,3 +127,29 @@ PostgreSQL can be deployed on Amazon RDS or Aurora PostgreSQL depending on scale
 ## Summary
 
 This architecture balances scalability, operational simplicity, and engineering quality, making it suitable for high read traffic while remaining easy to maintain and extend.
+
+---
+
+## Search Indexing Strategy
+
+Search is powered by **Meilisearch**. Programs are indexed from Studio writes with eventual consistency. The current implementation performs synchronous indexing immediately after database writes; failure is surfaced as an application error and can be retried manually.
+
+References: `docs/adr/0001-search-indexing.md`
+
+## Caching Strategy
+
+Explore endpoints are intended to cache read-heavy responses. Cache keys are namespaced by endpoint and query parameters, and TTLs are short-lived to reduce staleness. Invalidation is handled by write-side updates when relevant records change.
+
+References: `docs/adr/0002-redis-caching.md`
+
+## Security Model
+
+Studio APIs are protected by an API key, while Explore remains public. Rate limiting may be applied to public endpoints as needed.
+
+References: `docs/adr/0003-studio-auth.md`
+
+## Observability
+
+Requests carry a request id and logs are structured for HTTP tracing. Error responses follow a consistent JSON shape across the API to simplify monitoring and client handling.
+
+References: `docs/adr/0004-observability.md`
