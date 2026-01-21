@@ -19,8 +19,34 @@ export class ProgramsRepository {
     return this.prisma.program.findUnique({ where: { id } });
   }
 
+  findWithCategories(id: string) {
+    return this.prisma.program.findUnique({
+      where: { id },
+      include: { categories: { include: { category: true } } },
+    });
+  }
+
   update(id: string, data: UpdateProgramDto) {
     return this.prisma.program.update({ where: { id }, data });
+  }
+
+  replaceCategories(programId: string, categoryIds: string[]) {
+    return this.prisma.$transaction([
+      this.prisma.programCategory.deleteMany({ where: { programId } }),
+      this.prisma.programCategory.createMany({
+        data: categoryIds.map((categoryId) => ({
+          programId,
+          categoryId,
+        })),
+        skipDuplicates: true,
+      }),
+    ]);
+  }
+
+  findCategoriesByIds(categoryIds: string[]) {
+    return this.prisma.category.findMany({
+      where: { id: { in: categoryIds } },
+    });
   }
 
   remove(id: string) {

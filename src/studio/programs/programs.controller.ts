@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateProgramDto } from './dto/create-program.dto';
+import { UpdateProgramCategoriesDto } from './dto/update-program-categories.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
 import { ProgramsService } from './programs.service';
 
@@ -51,6 +52,18 @@ export class ProgramsController {
     @Body() dto: UpdateProgramDto,
   ) {
     return this.programsService.update(id, dto);
+  }
+
+  @Put(':id/categories')
+  @ApiOperation({ summary: 'Replace program categories' })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Program categories updated' })
+  @ApiResponse({ status: 404, description: 'Program or category not found' })
+  updateCategories(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() dto: UpdateProgramCategoriesDto,
+  ) {
+    return this.programsService.updateCategories(id, dto);
   }
 
   @Delete(':id')

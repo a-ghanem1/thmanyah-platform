@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProgramDto } from './dto/create-program.dto';
+import { UpdateProgramCategoriesDto } from './dto/update-program-categories.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
 import { ProgramsRepository } from './programs.repository';
 
@@ -31,5 +32,17 @@ export class ProgramsService {
   async remove(id: string) {
     await this.findOne(id);
     return this.repository.remove(id);
+  }
+
+  async updateCategories(id: string, dto: UpdateProgramCategoriesDto) {
+    await this.findOne(id);
+    const categories = await this.repository.findCategoriesByIds(
+      dto.categoryIds,
+    );
+    if (categories.length !== dto.categoryIds.length) {
+      throw new NotFoundException('Category not found');
+    }
+    await this.repository.replaceCategories(id, dto.categoryIds);
+    return this.repository.findWithCategories(id);
   }
 }
