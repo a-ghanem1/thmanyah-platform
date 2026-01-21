@@ -3,13 +3,24 @@ import { CreateProgramDto } from './dto/create-program.dto';
 import { UpdateProgramCategoriesDto } from './dto/update-program-categories.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
 import { ProgramsRepository } from './programs.repository';
+import { MeiliService } from '../../shared/search/meili.service';
 
 @Injectable()
 export class ProgramsService {
-  constructor(private readonly repository: ProgramsRepository) {}
+  constructor(
+    private readonly repository: ProgramsRepository,
+    private readonly meiliService: MeiliService,
+  ) {}
 
-  create(dto: CreateProgramDto) {
-    return this.repository.create(dto);
+  async create(dto: CreateProgramDto) {
+    const program = await this.repository.create(dto);
+    const programWithCategories = await this.repository.findWithCategories(
+      program.id,
+    );
+    if (programWithCategories) {
+      await this.meiliService.syncProgram(programWithCategories);
+    }
+    return program;
   }
 
   findAll() {
@@ -26,12 +37,21 @@ export class ProgramsService {
 
   async update(id: string, dto: UpdateProgramDto) {
     await this.findOne(id);
-    return this.repository.update(id, dto);
+    const program = await this.repository.update(id, dto);
+    const programWithCategories = await this.repository.findWithCategories(
+      program.id,
+    );
+    if (programWithCategories) {
+      await this.meiliService.syncProgram(programWithCategories);
+    }
+    return program;
   }
 
   async remove(id: string) {
     await this.findOne(id);
-    return this.repository.remove(id);
+    const program = await this.repository.remove(id);
+    await this.meiliService.removeProgram(id);
+    return program;
   }
 
   async updateCategories(id: string, dto: UpdateProgramCategoriesDto) {
@@ -43,6 +63,10 @@ export class ProgramsService {
       throw new NotFoundException('Category not found');
     }
     await this.repository.replaceCategories(id, dto.categoryIds);
-    return this.repository.findWithCategories(id);
+    const programWithCategories = await this.repository.findWithCategories(id);
+    if (programWithCategories) {
+      await this.meiliService.syncProgram(programWithCategories);
+    }
+    return programWithCategories;
   }
 }
