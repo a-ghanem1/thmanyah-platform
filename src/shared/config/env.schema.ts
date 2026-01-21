@@ -5,7 +5,8 @@ export const envSchema = z.object({
   MEILI_HOST: z.string().url(),
   MEILI_API_KEY: z.string().optional(),
   REDIS_URL: z.string().optional(),
-  STUDIO_API_KEY: z.string().min(1),
+  JWT_SECRET: z.string().min(1),
+  JWT_EXPIRES_IN: z.string().default('1h'),
   PORT: z.coerce.number().int().positive(),
 });
 

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../shared/database/database.module';
-import { StudioApiKeyGuard } from '../security/studio-api-key.guard';
+import { AuthModule } from '../auth/auth.module';
 import { CategoriesController } from './categories.controller';
 import { CategoriesRepository } from './categories.repository';
 import { CategoriesService } from './categories.service';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, AuthModule],
   controllers: [CategoriesController],
-  providers: [CategoriesService, CategoriesRepository, StudioApiKeyGuard],
+  providers: [CategoriesService, CategoriesRepository],
 })
 export class CategoriesModule {}

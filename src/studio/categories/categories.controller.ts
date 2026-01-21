@@ -10,13 +10,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { StudioApiKeyGuard } from '../security/studio-api-key.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @ApiTags('Studio', 'studio/categories')
-@UseGuards(StudioApiKeyGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('studio/categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}

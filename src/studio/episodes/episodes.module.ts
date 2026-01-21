@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../shared/database/database.module';
-import { StudioApiKeyGuard } from '../security/studio-api-key.guard';
+import { AuthModule } from '../auth/auth.module';
 import { EpisodesController } from './episodes.controller';
 import { EpisodesRepository } from './episodes.repository';
 import { EpisodesService } from './episodes.service';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, AuthModule],
   controllers: [EpisodesController],
-  providers: [EpisodesService, EpisodesRepository, StudioApiKeyGuard],
+  providers: [EpisodesService, EpisodesRepository],
 })
 export class EpisodesModule {}
