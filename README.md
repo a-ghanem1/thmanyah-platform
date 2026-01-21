@@ -17,30 +17,58 @@ This codebase follows a modular monolith architecture. For details, see `docs/ar
 ## Local Development
 Requirements: Node.js and Docker
 
-1) `docker compose up -d`
+### Run with Docker Compose
+1) `docker compose up -d --build`
 2) `npm install`
 3) `npm run prisma:generate`
 4) `npm run prisma:migrate`
-5) `npm run start:dev`
+5) `npm run db:seed`
 
-If you run the full stack with `docker compose up --build`, run migrations from your host:
-`npm run prisma:migrate`
+Docker Compose uses `.env.docker` by default. Update it to match your local setup.
 
 If you prefer running Prisma inside the app container:
 `docker exec -it thmanyah-app npx prisma migrate dev`
+
+### Run API locally (without Docker)
+1) `npm install`
+2) `npm run prisma:generate`
+3) `npm run prisma:migrate`
+4) `npm run db:seed`
+5) `npm run start:dev`
 
 ## Environment Variables
 Core:
 - `DATABASE_URL`
 - `MEILI_HOST`
 - `MEILI_API_KEY`
+ - `REDIS_URL`
 
 Studio:
-- `STUDIO_API_KEY` (used by `X-Studio-Api-Key` header)
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN`
+- `ADMIN_PASSWORD` (used by `prisma/seed.ts`)
+
+### Studio Login (after seeding)
+Default admin:
+- Email: `admin@thmanyah.local`
+- Password: value of `ADMIN_PASSWORD` (in `.env.docker` it's `password`, defaults to `Admin@12345` when unset)
+
+Example:
+```bash
+curl -X POST "http://localhost:3000/studio/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@thmanyah.local","password":"password"}'
+```
+
+### Explore (public) quick checks
+```bash
+curl "http://localhost:3000/explore/programs?page=1&limit=10"
+curl "http://localhost:3000/explore/search?q=podcast&page=1&limit=10"
+```
 
 ## Documentation
 - `docs/architecture.md`
 - `docs/database-schema.md`
 
 ## Postman
-No Postman collection is checked in yet.
+Collection: `postman/Thmanyah-Platform.postman_collection.json`

@@ -45,11 +45,11 @@ Each module represents a clear bounded context with explicit responsibilities.
 ### Write Path (Thmanyah Studio)
 
 ```
-Editor → Studio API → PostgreSQL → Async indexing → Search Engine
+Editor → Studio API → PostgreSQL → Outbox events → Search worker → Search Engine
 ```
 
 - PostgreSQL is the source of truth
-- Search index is updated asynchronously
+- Search index is updated asynchronously via an outbox worker
 - Eventual consistency is acceptable for discovery use cases
 
 ---
@@ -132,15 +132,15 @@ This architecture balances scalability, operational simplicity, and engineering 
 
 ## Search Indexing Strategy
 
-Search is powered by **Meilisearch**. Programs are indexed from Studio writes with eventual consistency. The current implementation performs synchronous indexing immediately after database writes; failure is surfaced as an application error and can be retried manually.
+Search is powered by **Meilisearch**. Studio writes enqueue outbox events that are processed asynchronously by a background worker. The worker upserts or deletes programs in the search index and retries failed events.
 
 ## Caching Strategy
 
-Explore endpoints are intended to cache read-heavy responses. Cache keys are namespaced by endpoint and query parameters, and TTLs are short-lived to reduce staleness. Invalidation is handled by write-side updates when relevant records change.
+Explore endpoints cache read-heavy responses in Redis. Cache keys are namespaced by endpoint and query parameters, with short TTLs to limit staleness. This reduces load on the database and search engine during spikes.
 
 ## Security Model
 
-Studio APIs are protected by an API key, while Explore remains public. Rate limiting may be applied to public endpoints as needed.
+Studio APIs use JWT authentication with role-based access control (admin/editor). Explore remains public. Rate limiting may be applied to public endpoints as needed.
 
 ## Observability
 
