@@ -10,7 +10,7 @@ import { BrowseService } from './browse.service';
 import { ListProgramsQueryDto } from './dto/list-programs.query.dto';
 import { PaginationDto } from './dto/pagination.dto';
 
-@ApiTags('explore/browse')
+@ApiTags('Explore', 'explore/browse')
 @Controller('explore')
 export class BrowseController {
   constructor(private readonly browseService: BrowseService) {}

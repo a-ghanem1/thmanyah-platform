@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ExploreModule } from './explore/explore.module';
 import { IngestionModule } from './ingestion/ingestion.module';
 import { DatabaseModule } from './shared/database/database.module';
+import { HealthModule } from './shared/health/health.module';
 import { SharedModule } from './shared/shared.module';
 import { StudioModule } from './studio/studio.module';
 
@@ -14,6 +15,7 @@ import { StudioModule } from './studio/studio.module';
     IngestionModule,
     SharedModule,
     DatabaseModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

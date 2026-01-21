@@ -14,7 +14,7 @@ import { UpdateProgramCategoriesDto } from './dto/update-program-categories.dto'
 import { UpdateProgramDto } from './dto/update-program.dto';
 import { ProgramsService } from './programs.service';
 
-@ApiTags('studio/programs')
+@ApiTags('Studio', 'studio/programs')
 @Controller('studio/programs')
 export class ProgramsController {
   constructor(private readonly programsService: ProgramsService) {}

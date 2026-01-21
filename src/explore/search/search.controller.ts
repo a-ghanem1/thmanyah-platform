@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ExploreSearchService } from './search.service';
 import { SearchProgramsQueryDto } from './dto/search-programs.query.dto';
 
-@ApiTags('explore/search')
+@ApiTags('Explore', 'explore/search')
 @Controller('explore/search')
 export class ExploreSearchController {
   constructor(private readonly searchService: ExploreSearchService) {}

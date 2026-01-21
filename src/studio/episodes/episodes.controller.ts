@@ -13,7 +13,7 @@ import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { EpisodesService } from './episodes.service';
 
-@ApiTags('studio/episodes')
+@ApiTags('Studio', 'studio/episodes')
 @Controller('studio')
 export class EpisodesController {
   constructor(private readonly episodesService: EpisodesService) {}
