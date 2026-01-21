@@ -88,3 +88,24 @@ model UserRole {
 
   @@id([userId, roleId])
 }
+
+model SearchOutboxEvent {
+  id          String            @id @default(uuid())
+  type        String
+  entityId    String
+  payload     Json
+  status      SearchOutboxStatus @default(pending)
+  attempts    Int               @default(0)
+  lastError   String?
+  createdAt   DateTime          @default(now())
+  processedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([type])
+}
+
+enum SearchOutboxStatus {
+  pending
+  processed
+  failed
+}

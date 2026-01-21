@@ -3,23 +3,20 @@ import { CreateProgramDto } from './dto/create-program.dto';
 import { UpdateProgramCategoriesDto } from './dto/update-program-categories.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
 import { ProgramsRepository } from './programs.repository';
-import { MeiliService } from '../../shared/search/meili.service';
+import { SearchOutboxService } from '../../shared/search/outbox.service';
 
 @Injectable()
 export class ProgramsService {
   constructor(
     private readonly repository: ProgramsRepository,
-    private readonly meiliService: MeiliService,
+    private readonly outboxService: SearchOutboxService,
   ) {}
 
   async create(dto: CreateProgramDto) {
     const program = await this.repository.create(dto);
-    const programWithCategories = await this.repository.findWithCategories(
-      program.id,
-    );
-    if (programWithCategories) {
-      await this.meiliService.syncProgram(programWithCategories);
-    }
+    await this.outboxService.enqueueProgramUpsert(program.id, {
+      action: 'create',
+    });
     return program;
   }
 
@@ -38,19 +35,16 @@ export class ProgramsService {
   async update(id: string, dto: UpdateProgramDto) {
     await this.findOne(id);
     const program = await this.repository.update(id, dto);
-    const programWithCategories = await this.repository.findWithCategories(
-      program.id,
-    );
-    if (programWithCategories) {
-      await this.meiliService.syncProgram(programWithCategories);
-    }
+    await this.outboxService.enqueueProgramUpsert(program.id, {
+      action: 'update',
+    });
     return program;
   }
 
   async remove(id: string) {
     await this.findOne(id);
     const program = await this.repository.remove(id);
-    await this.meiliService.removeProgram(id);
+    await this.outboxService.enqueueProgramDelete(id, { action: 'delete' });
     return program;
   }
 
@@ -63,10 +57,9 @@ export class ProgramsService {
       throw new NotFoundException('Category not found');
     }
     await this.repository.replaceCategories(id, dto.categoryIds);
-    const programWithCategories = await this.repository.findWithCategories(id);
-    if (programWithCategories) {
-      await this.meiliService.syncProgram(programWithCategories);
-    }
-    return programWithCategories;
+    await this.outboxService.enqueueProgramUpsert(id, {
+      action: 'update-categories',
+    });
+    return this.repository.findWithCategories(id);
   }
 }
