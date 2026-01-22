@@ -1,6 +1,6 @@
 # Database Schema
 
-This document reflects `prisma/schema.prisma`. Table names follow Prisma defaults (PascalCase).
+This document mirrors `prisma/schema.prisma`. Table names follow Prisma defaults (PascalCase).
 
 ## Core Content
 
