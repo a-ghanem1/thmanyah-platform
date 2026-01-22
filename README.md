@@ -24,6 +24,10 @@ Studio owns write paths. Explore serves read paths with optional Redis caching. 
 
 NestJS, Prisma, PostgreSQL, Meilisearch, Redis, Docker / Docker Compose, husky.
 
+## CI
+
+CI runs on pull requests and pushes to `main`. On `main`, a Docker image is published to GHCR as `ghcr.io/a-ghanem1/thmanyah-platform`.
+
 ## Local Development (non-docker)
 
 Requirements: Node.js, PostgreSQL, Meilisearch. Redis.
