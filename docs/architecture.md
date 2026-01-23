@@ -10,6 +10,7 @@ We keep each module as a bounded context with its own controllers and services. 
 
 - Studio: authenticated write APIs for programs, episodes, and categories.
 - Explore: public read APIs for browse and search.
+- Ingestion: importer framework (service-only, no HTTP endpoints).
 - Shared: Prisma database access, Meilisearch client + outbox worker, Redis cache, config validation, health, observability.
 
 ## Data Flow
@@ -25,7 +26,7 @@ PostgreSQL is the source of truth. Program create/update/delete and category cha
 ### Read Path (Explore)
 
 ```
-User → Explore API → Redis cache → Meilisearch / PostgreSQL
+User → Explore API → Redis cache → Meilisearch / PostgreSQL (replica)
 ```
 
 Browse endpoints read from PostgreSQL (published programs/episodes, categories). Search endpoints query Meilisearch. Redis caching is optional and disabled when `REDIS_URL` is not set.
@@ -50,7 +51,7 @@ Studio endpoints are protected by JWT auth and role-based access (admin/editor).
 
 ## Observability
 
-Each request gets an `x-request-id` header, which is returned in the response. HTTP access logs are emitted as JSON with method/path/status/duration and requestId. Errors are normalized via a global exception filter (`statusCode`, `error`, `message`, `path`, `timestamp`, `requestId`).
+Each request gets an `x-request-id` header, which is returned in the response. HTTP access logs are emitted as JSON with method/path/status/duration and requestId. Errors are normalized via a global exception filter (`statusCode`, `error`, `message`, `path`, `timestamp`, `requestId`). Health endpoints are available at `/health` and `/health/ready`.
 
 ## Future Content Import (Ingestion Framework)
 

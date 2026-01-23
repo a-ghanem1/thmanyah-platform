@@ -14,7 +14,7 @@
 
 ## Project Overview
 
-Thmanyah Platform is a NestJS modular monolith with two API surfaces: Studio (internal CMS) and Explore (public discovery + search). PostgreSQL (via Prisma) is the source of truth. Program updates enqueue outbox events that a background worker consumes to keep the Meilisearch index in sync.
+Thmanyah Platform is a NestJS modular monolith with Studio (internal CMS) and Explore (public discovery + search). PostgreSQL (via Prisma) is the source of truth. Program updates enqueue outbox events that a background worker consumes to keep the Meilisearch index in sync.
 
 ## Architecture Summary
 
@@ -26,11 +26,11 @@ NestJS, Prisma, PostgreSQL, Meilisearch, Redis, Docker / Docker Compose, husky.
 
 ## CI
 
-CI runs on pull requests and pushes to `main`. On `main`, a Docker image is published to GHCR as `ghcr.io/a-ghanem1/thmanyah-platform`.
+CI runs on pull requests and pushes to `main` and executes lint, unit tests, and build. On `main`, a Docker image is published to GHCR as `ghcr.io/a-ghanem1/thmanyah-platform`.
 
 ## Local Development (non-docker)
 
-Requirements: Node.js, PostgreSQL, Meilisearch. Redis.
+Requirements: Node.js, PostgreSQL, Meilisearch. Redis is optional.
 
 1. `npm install`
 2. `npm run prisma:generate`
@@ -46,6 +46,7 @@ Requirements: Node.js, PostgreSQL, Meilisearch. Redis.
 4. `docker exec -it thmanyah-app npm run db:seed`
 
 Docker Compose uses `.env.docker` by default. The API is available on `http://localhost:3000`.
+Migrations and seeding run against the primary database; the replica follows via streaming replication.
 
 ## Local DB with read replica
 
@@ -65,16 +66,24 @@ Set these in `.env` (local) or `.env.docker` (compose). They are validated at st
 Required:
 
 - `DATABASE_URL`
-- `DATABASE_REPLICA_URLS` (comma-separated read replica URLs)
 - `MEILI_HOST`
 - `JWT_SECRET`
 - `PORT`
 
 Optional:
 
+- `DATABASE_REPLICA_URLS` (comma-separated read replica URLs)
 - `MEILI_API_KEY`
 - `REDIS_URL`
 - `JWT_EXPIRES_IN` (defaults to `1h`)
+
+Note: the runtime config is defined by `src/shared/config/env.schema.ts`.
+
+## Tests
+
+- `npm run lint`
+- `npm test`
+- `npm run test:e2e`
 
 ## Documentation
 

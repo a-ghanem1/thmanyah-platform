@@ -12,6 +12,13 @@
       }
     },
     {
+      "name": "Health Ready",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health/ready"
+      }
+    },
+    {
       "name": "Studio Login",
       "event": [
         {
@@ -466,6 +473,13 @@
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/explore/search?q=podcast&page=1&limit=10"
+          }
+        },
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/explore/categories"
           }
         }
       ]
