@@ -9,5 +9,6 @@ import { EpisodesService } from './episodes.service';
   imports: [DatabaseModule, AuthModule],
   controllers: [EpisodesController],
   providers: [EpisodesService, EpisodesRepository],
+  exports: [EpisodesService],
 })
 export class EpisodesModule {}

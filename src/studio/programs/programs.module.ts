@@ -10,5 +10,6 @@ import { ProgramsService } from './programs.service';
   imports: [DatabaseModule, SearchModule, AuthModule],
   controllers: [ProgramsController],
   providers: [ProgramsService, ProgramsRepository],
+  exports: [ProgramsService],
 })
 export class ProgramsModule {}

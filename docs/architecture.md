@@ -45,3 +45,15 @@ Studio endpoints are protected by JWT auth and role-based access (admin/editor).
 ## Observability
 
 Each request gets an `x-request-id` header, which is returned in the response. HTTP access logs are emitted as JSON with method/path/status/duration and requestId. Errors are normalized via a global exception filter (`statusCode`, `error`, `message`, `path`, `timestamp`, `requestId`).
+
+## Future Content Import (Ingestion Framework)
+
+The ingestion framework uses a Strategy + Registry pattern with a Template Method base class. Importers implement `fetchRaw()` and `mapToDomain()` while the base importer handles validation, persistence via Studio services, and optional search indexing. This keeps the write path consistent and ensures validation and business rules remain centralized in service layers. Explore read APIs and Meilisearch indexing do not need changes because Explore reads only from PostgreSQL/Meilisearch and indexing is already decoupled via the outbox worker.
+
+To add a new importer:
+
+1. Create a new importer class that extends `BaseImporter` and set a unique `source`.
+2. Implement `fetchRaw()` and `mapToDomain()` for the new source.
+3. Register the importer in `IngestionModule` using the `CONTENT_IMPORTER` provider token.
+
+External integrations (YouTube, RSS, etc.) are intentionally out of scope for this submission; the framework is designed to support them later without redesigning the core system.

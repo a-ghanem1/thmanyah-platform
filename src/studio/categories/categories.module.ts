@@ -9,5 +9,6 @@ import { CategoriesService } from './categories.service';
   imports: [DatabaseModule, AuthModule],
   controllers: [CategoriesController],
   providers: [CategoriesService, CategoriesRepository],
+  exports: [CategoriesService],
 })
 export class CategoriesModule {}
