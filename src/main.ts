@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './shared/http/http-exception.filter';
 import { HttpLoggingInterceptor } from './shared/observability/http-logging.interceptor';
 import { RequestIdMiddleware } from './shared/observability/request-id.middleware';
+import { SeedService } from './shared/seed/seed.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
+  await app.get(SeedService).seedIfNeeded();
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap().catch((error) => {

@@ -41,12 +41,11 @@ Requirements: Node.js, PostgreSQL, Meilisearch. Redis is optional.
 ## Docker Compose (end-to-end)
 
 1. `docker compose up -d --build`
-2. `docker exec -it thmanyah-app npm run prisma:generate`
-3. `docker exec -it thmanyah-app npm run prisma:migrate`
-4. `docker exec -it thmanyah-app npm run db:seed`
+
+Startup will automatically seed the admin user if it does not exist.
 
 Docker Compose uses `.env.docker` by default. The API is available on `http://localhost:3000`.
-Migrations and seeding run against the primary database; the replica follows via streaming replication.
+Migrations run automatically on container startup against the primary database; the replica follows via streaming replication.
 RabbitMQ management UI is available at `http://localhost:15672` (guest/guest).
 Swagger UI is available at `http://localhost:3000/docs`.
 
@@ -81,14 +80,6 @@ Optional:
 - `MEILI_API_KEY`
 - `REDIS_URL`
 - `JWT_EXPIRES_IN` (defaults to `1h`)
-
-Note: the runtime config is defined by `src/shared/config/env.schema.ts`.
-
-## Tests
-
-- `npm run lint`
-- `npm test`
-- `npm run test:e2e`
 
 ## Documentation
 

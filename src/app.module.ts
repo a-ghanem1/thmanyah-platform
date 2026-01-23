@@ -6,6 +6,7 @@ import { IngestionModule } from './ingestion/ingestion.module';
 import { ConfigModule } from './shared/config/config.module';
 import { DatabaseModule } from './shared/database/database.module';
 import { HealthModule } from './shared/health/health.module';
+import { SeedModule } from './shared/seed/seed.module';
 import { SharedModule } from './shared/shared.module';
 import { StudioModule } from './studio/studio.module';
 
@@ -17,6 +18,7 @@ import { StudioModule } from './studio/studio.module';
     SharedModule,
     DatabaseModule,
     HealthModule,
+    SeedModule,
     ConfigModule,
   ],
   controllers: [AppController],

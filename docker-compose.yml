@@ -6,6 +6,8 @@ services:
     container_name: thmanyah-app
     env_file:
       - .env.docker
+    volumes:
+      - ./prisma:/app/prisma
     ports:
       - "3000:3000"
     depends_on:
@@ -85,10 +87,11 @@ services:
       - "5672:5672"
       - "15672:15672"
     volumes:
-      - redis_data:/data
+      - rabbitmq_data:/var/lib/rabbitmq
 
 volumes:
   postgres_primary_data:
   postgres_replica_data:
   meili_data:
   redis_data:
+  rabbitmq_data:
