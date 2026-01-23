@@ -48,6 +48,7 @@ Requirements: Node.js, PostgreSQL, Meilisearch. Redis is optional.
 Docker Compose uses `.env.docker` by default. The API is available on `http://localhost:3000`.
 Migrations and seeding run against the primary database; the replica follows via streaming replication.
 RabbitMQ management UI is available at `http://localhost:15672` (guest/guest).
+Swagger UI is available at `http://localhost:3000/docs`.
 
 ## Local DB with read replica
 
