@@ -38,6 +38,12 @@ Outbox events are stored in `SearchOutboxEvent` with status (`pending`, `process
 
 Explore responses are cached with a TTL (60 seconds). The cache is deliberately simple: keys are based on the route and normalized query params, and there is no explicit invalidation. This keeps the implementation small but means data can be stale until the TTL expires.
 
+## Read Replicas (Prisma Client Extension)
+
+Read traffic is routed through Prisma's read replicas extension. By default, non-transactional reads go to replicas, while writes and `$transaction` remain on the primary. For read-after-write or strict consistency, use `$primary()` to force reads to the primary. `$replica()` can be used to explicitly send a read to a replica. Replica URLs are provided via `DATABASE_REPLICA_URLS` (comma-separated).
+
+Rationale: Prisma's recommended read replicas extension keeps routing consistent with Prisma Client semantics and avoids custom query routing logic.
+
 ## Security Model
 
 Studio endpoints are protected by JWT auth and role-based access (admin/editor). Explore endpoints are public.

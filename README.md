@@ -47,6 +47,17 @@ Requirements: Node.js, PostgreSQL, Meilisearch. Redis.
 
 Docker Compose uses `.env.docker` by default. The API is available on `http://localhost:3000`.
 
+## Local DB with read replica
+
+This setup runs a primary Postgres on `5432` and a read replica on `5433`.
+
+1. `docker compose up -d postgres-primary postgres-replica`
+2. Verify replication:
+   - `docker exec -it thmanyah-postgres-primary psql -U thmanyah -d thmanyah -c "select pg_is_in_recovery();"`
+   - `docker exec -it thmanyah-postgres-replica psql -U thmanyah -d thmanyah -c "select pg_is_in_recovery();"`
+
+Expected: primary returns `f`, replica returns `t`.
+
 ## Environment Variables
 
 Set these in `.env` (local) or `.env.docker` (compose). They are validated at startup.
@@ -54,6 +65,7 @@ Set these in `.env` (local) or `.env.docker` (compose). They are validated at st
 Required:
 
 - `DATABASE_URL`
+- `DATABASE_REPLICA_URLS` (comma-separated read replica URLs)
 - `MEILI_HOST`
 - `JWT_SECRET`
 - `PORT`

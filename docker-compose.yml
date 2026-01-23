@@ -9,7 +9,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - postgres
+      - postgres-primary
+      - postgres-replica
       - meilisearch
       - redis
     healthcheck:
@@ -17,17 +18,48 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-  postgres:
-    image: postgres:16
-    container_name: thmanyah-postgres
+
+  postgres-primary:
+    image: docker.io/bitnami/postgresql:latest
+    container_name: thmanyah-postgres-primary
     environment:
-      POSTGRES_DB: thmanyah
-      POSTGRES_USER: thmanyah
-      POSTGRES_PASSWORD: thmanyah
+      - POSTGRESQL_POSTGRES_PASSWORD=postgres
+      - POSTGRESQL_USERNAME=thmanyah
+      - POSTGRESQL_PASSWORD=thmanyah
+      - POSTGRESQL_DATABASE=thmanyah
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=replicator
+      - POSTGRESQL_REPLICATION_PASSWORD=replicator_password
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_primary_data:/bitnami/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thmanyah -d thmanyah"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-replica:
+    image: docker.io/bitnami/postgresql:latest
+    container_name: thmanyah-postgres-replica
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=postgres
+      - POSTGRESQL_USERNAME=thmanyah
+      - POSTGRESQL_PASSWORD=thmanyah
+      - POSTGRESQL_MASTER_HOST=postgres-primary
+      - POSTGRESQL_MASTER_PORT_NUMBER=5432
+      - POSTGRESQL_REPLICATION_MODE=slave
+      - POSTGRESQL_REPLICATION_USER=replicator
+      - POSTGRESQL_REPLICATION_PASSWORD=replicator_password
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_replica_data:/bitnami/postgresql
+
   meilisearch:
     image: getmeili/meilisearch:v1.9
     container_name: thmanyah-meilisearch
@@ -38,12 +70,17 @@ services:
       - "7700:7700"
     volumes:
       - meili_data:/meili_data
+
   redis:
     image: redis:7-alpine
     container_name: thmanyah-redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
-  postgres_data:
+  postgres_primary_data:
+  postgres_replica_data:
   meili_data:
+  redis_data:

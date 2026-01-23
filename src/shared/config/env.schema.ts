@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
+  DATABASE_REPLICA_URLS: z.string().optional(),
   MEILI_HOST: z.string().url(),
   MEILI_API_KEY: z.string().optional(),
   REDIS_URL: z.string().optional(),
