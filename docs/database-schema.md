@@ -107,8 +107,9 @@ id          TEXT (PK)
 type        TEXT
 entityId    TEXT
 payload     JSONB
-status      SearchOutboxStatus (default pending)
+status      SearchOutboxStatus (default PENDING)
 attempts    INTEGER (default 0)
+nextAttemptAt TIMESTAMP (default now)
 lastError   TEXT NULL
 createdAt   TIMESTAMP (default now)
 processedAt TIMESTAMP NULL
@@ -118,7 +119,7 @@ Indexes: `(status, createdAt)`, `type`.
 
 ### SearchOutboxStatus
 
-Enum values: `pending`, `processed`, `failed`.
+Enum values: `PENDING`, `PUBLISHED`, `FAILED`.
 
 ## Relationships Summary
 

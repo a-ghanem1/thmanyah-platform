@@ -94,18 +94,20 @@ model SearchOutboxEvent {
   type        String
   entityId    String
   payload     Json
-  status      SearchOutboxStatus @default(pending)
+  status      SearchOutboxStatus @default(PENDING)
   attempts    Int               @default(0)
+  nextAttemptAt DateTime        @default(now())
   lastError   String?
   createdAt   DateTime          @default(now())
   processedAt DateTime?
 
   @@index([status, createdAt])
+  @@index([status, nextAttemptAt])
   @@index([type])
 }
 
 enum SearchOutboxStatus {
-  pending
-  processed
-  failed
+  PENDING
+  PUBLISHED
+  FAILED
 }

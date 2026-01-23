@@ -11,17 +11,17 @@ We keep each module as a bounded context with its own controllers and services. 
 - Studio: authenticated write APIs for programs, episodes, and categories.
 - Explore: public read APIs for browse and search.
 - Ingestion: importer framework (service-only, no HTTP endpoints).
-- Shared: Prisma database access, Meilisearch client + outbox worker, Redis cache, config validation, health, observability.
+- Shared: Prisma database access, Meilisearch client + outbox relay/consumer, Redis cache, config validation, health, observability.
 
 ## Data Flow
 
 ### Write Path (Studio)
 
 ```
-Editor → Studio API → PostgreSQL → SearchOutboxEvent → SearchOutboxWorker → Meilisearch
+Editor → Studio API → PostgreSQL → SearchOutboxEvent → OutboxRelay → RabbitMQ → IndexerConsumer → Meilisearch
 ```
 
-PostgreSQL is the source of truth. Program create/update/delete and category changes enqueue outbox events. A background worker polls the outbox every 5 seconds (batch size 20) and syncs the `programs` index. Only `published` programs are indexed; unpublished ones are removed.
+PostgreSQL is the source of truth. Program create/update/delete and category changes enqueue outbox events in the same DB transaction. A relay worker publishes pending outbox events to RabbitMQ. Indexer consumers process the queue and sync the `programs` index. Only `published` programs are indexed; unpublished ones are removed.
 
 ### Read Path (Explore)
 
@@ -33,7 +33,7 @@ Browse endpoints read from PostgreSQL (published programs/episodes, categories).
 
 ## Search Indexing Strategy
 
-Outbox events are stored in `SearchOutboxEvent` with status (`pending`, `processed`, `failed`). The worker retries failed events and logs outcomes. Meilisearch settings are configured on startup (searchable: title/description; filterable: language/categories/publishedAt; sortable: publishedAt/createdAt).
+Outbox events are stored in `SearchOutboxEvent` with status (`PENDING`, `PUBLISHED`, `FAILED`). The relay claims pending events in batches, publishes to RabbitMQ, and retries failures with backoff. Indexer consumers can run in multiple instances for scale; handlers are idempotent, so duplicate messages are safe. Meilisearch settings are configured on startup (searchable: title/description; filterable: language/categories/publishedAt; sortable: publishedAt/createdAt).
 
 ## Caching Strategy
 
@@ -55,7 +55,7 @@ Each request gets an `x-request-id` header, which is returned in the response. H
 
 ## Future Content Import (Ingestion Framework)
 
-The ingestion framework uses a Strategy + Registry pattern with a Template Method base class. Importers implement `fetchRaw()` and `mapToDomain()` while the base importer handles validation, persistence via Studio services, and optional search indexing. This keeps the write path consistent and ensures validation and business rules remain centralized in service layers. Explore read APIs and Meilisearch indexing do not need changes because Explore reads only from PostgreSQL/Meilisearch and indexing is already decoupled via the outbox worker.
+The ingestion framework uses a Strategy + Registry pattern with a Template Method base class. Importers implement `fetchRaw()` and `mapToDomain()` while the base importer handles validation, persistence via Studio services, and optional search indexing. This keeps the write path consistent and ensures validation and business rules remain centralized in service layers. Explore read APIs and Meilisearch indexing do not need changes because Explore reads only from PostgreSQL/Meilisearch and indexing is already decoupled via the outbox relay.
 
 To add a new importer:
 
@@ -64,3 +64,9 @@ To add a new importer:
 3. Register the importer in `IngestionModule` using the `CONTENT_IMPORTER` provider token.
 
 External integrations (YouTube, RSS, etc.) are intentionally out of scope for this submission; the framework is designed to support them later without redesigning the core system.
+
+## What We Intentionally Did Not Do
+
+- No cache invalidation strategy beyond TTL.
+- No external ingestion connectors in this codebase.
+- No dead-letter queue for failed RabbitMQ messages.

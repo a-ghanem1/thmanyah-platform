@@ -13,6 +13,7 @@ services:
       - postgres-replica
       - meilisearch
       - redis
+      - rabbitmq
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
       interval: 10s
@@ -76,6 +77,13 @@ services:
     container_name: thmanyah-redis
     ports:
       - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: thmanyah-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     volumes:
       - redis_data:/data
 

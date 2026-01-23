@@ -22,7 +22,7 @@ Studio owns write paths. Explore serves read paths with optional Redis caching. 
 
 ## Tech Stack
 
-NestJS, Prisma, PostgreSQL, Meilisearch, Redis, Docker / Docker Compose, husky.
+NestJS, Prisma, PostgreSQL, Meilisearch, Redis, RabbitMQ, Docker / Docker Compose, husky.
 
 ## CI
 
@@ -47,6 +47,7 @@ Requirements: Node.js, PostgreSQL, Meilisearch. Redis is optional.
 
 Docker Compose uses `.env.docker` by default. The API is available on `http://localhost:3000`.
 Migrations and seeding run against the primary database; the replica follows via streaming replication.
+RabbitMQ management UI is available at `http://localhost:15672` (guest/guest).
 
 ## Local DB with read replica
 
@@ -67,6 +68,9 @@ Required:
 
 - `DATABASE_URL`
 - `MEILI_HOST`
+- `RABBITMQ_URL`
+- `RABBITMQ_EXCHANGE`
+- `RABBITMQ_QUEUE`
 - `JWT_SECRET`
 - `PORT`
 

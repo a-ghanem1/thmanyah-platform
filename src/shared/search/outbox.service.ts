@@ -9,8 +9,13 @@ const PROGRAM_DELETE_EVENT = 'program.delete';
 export class SearchOutboxService {
   constructor(private readonly prisma: PrismaService) {}
 
-  enqueueProgramUpsert(programId: string, payload: Prisma.JsonObject = {}) {
-    return this.prisma.searchOutboxEvent.create({
+  enqueueProgramUpsert(
+    programId: string,
+    payload: Prisma.JsonObject = {},
+    tx?: Prisma.TransactionClient,
+  ) {
+    const client = tx ?? this.prisma;
+    return client.searchOutboxEvent.create({
       data: {
         type: PROGRAM_UPSERT_EVENT,
         entityId: programId,
@@ -19,8 +24,13 @@ export class SearchOutboxService {
     });
   }
 
-  enqueueProgramDelete(programId: string, payload: Prisma.JsonObject = {}) {
-    return this.prisma.searchOutboxEvent.create({
+  enqueueProgramDelete(
+    programId: string,
+    payload: Prisma.JsonObject = {},
+    tx?: Prisma.TransactionClient,
+  ) {
+    const client = tx ?? this.prisma;
+    return client.searchOutboxEvent.create({
       data: {
         type: PROGRAM_DELETE_EVENT,
         entityId: programId,
